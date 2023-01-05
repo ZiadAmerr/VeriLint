@@ -160,7 +160,13 @@ class Statement:
 
     def evaluate_num(self, num):
         """Evaluates the number as an actual string to be evaluated"""
-        if "'" not in num and num in ['0', '1']:
+        num = num.strip()
+        if "'" not in num and num.isdigit():
+            if num in ["0", "1"]:
+                size = 1
+            else:
+                size = 31
+            add_var(str(num), size=size, val=int(num), net_type="reg")
             return str(num)
 
         if "'" in num:
@@ -215,8 +221,11 @@ class Statement:
             if temp_size > max_size:
                 max_size = temp_size
 
-        if max_size >= size_of_target and (" + " in terms or " << " in terms):
-            add_error(self, "Possibility of Overflow")
+        if max_size >= size_of_target:
+            if  " + " in terms or " << " in terms:
+                add_error(self, "Possibility of Overflow")
+            else:
+                add_error(self, "Possibility of Underflow")
 
 
 class Declaration:
@@ -366,6 +375,7 @@ class Assign:
 
     def __str__(self):
         return f"assign {self.target} = {self.value}"
+
 
 # class LocalParam:
 #     """Local Param Class"""
@@ -541,6 +551,7 @@ def check_case(always_block_param):
     temp_always = always_block_param
     always = []
     case_type = None
+    has_default = False
     for i, line in enumerate(temp_always.split(";")):
         if "case" in line or "casex" in line or "casez" in line:
             x = re.split(r'\)', line)
@@ -569,8 +580,8 @@ def check_case(always_block_param):
 
     # Check if default exists
     for line in always_block_param:
-        if "default:" in line:
-            return True
+        if "default" in line:
+            has_default = True
 
     case_var = get_case_var(always)
     case_var_size = get_var(case_var)["size"]
@@ -649,7 +660,7 @@ def check_case(always_block_param):
                     continue
 
             if case_type == "casez":
-                if d1 in ["?", "Z"] or d2 in ["?", "Z"]:
+                if d1 == "Z" or d2 == "Z":
                     continue
 
             return False
@@ -667,6 +678,10 @@ def check_case(always_block_param):
         for i, comb in enumerate(all_combs):
             freq[i] += int(compare_nums(case, comb))
 
+    if has_default:
+        for i, _ in enumerate(freq):
+            if freq[i] == 0:
+                freq[i] += 1
     # If there is any number is frequency that is greater than 1, then it was repeated
     # return max(freq) <= 1
     return freq, cases
