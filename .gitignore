@@ -1,14 +1,6 @@
 /.DS_Store
 /.idea
 /.ipynb_checkpoints
-/FullCase.v
-/NotParallel.v
-/Parallel.v
-/Untitled.ipynb
-/VeriLint.ipynb
 /__pycache__
-/arithmeticOverflow.v
-/arithmeticOverflow2.v
-/fsm.v
-/multidriven.v
 /venv
+/verilog_files/.DS_Store
