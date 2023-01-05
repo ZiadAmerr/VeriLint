@@ -12,7 +12,7 @@ reg [2:0] internalReg = 1;
 
 
 always @(posedge clk) begin
-    internalReg <= internalReg << 1;
+    internalReg <= internalReg >> 1;
 end
 
 assign out = internalReg;

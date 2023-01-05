@@ -3,10 +3,10 @@ module integerOverflow (
     output [31:0] out
 );
 
-integer internalReg = 32'b1111111111111111111111111111110;
+integer [31:0] internalReg = 32'b1111111111111111111111111111110;
 
 always @(posedge clk) begin
-    internalReg = 1 + 1;
+    internalReg = 1;
 end
 
 assign out = internalReg;
