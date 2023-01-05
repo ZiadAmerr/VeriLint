@@ -1,11 +1,12 @@
 module initReg (
     input clk
 );
-    reg x = 0;
+    reg [0:0] x = 0;
+    reg [1:0] y;
 
     always @(posedge clk)
     begin
-        x = x + 1;
+        y = x + 1;
     end
 
 endmodule

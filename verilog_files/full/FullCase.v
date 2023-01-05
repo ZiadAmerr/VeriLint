@@ -23,4 +23,5 @@ always @(x) begin
         2'bZZ: y = 1;
     endcase
 end
+    
 endmodule

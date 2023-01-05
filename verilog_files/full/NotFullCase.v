@@ -20,6 +20,7 @@ always @(x) begin
         2'bZ0: y = 0;
         2'bZ1: y = 1;
         2'bZX: y = 0;
+        
     endcase
 end
     
