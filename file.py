@@ -877,7 +877,7 @@ def print_errors():
         if len(index) >= max_index_len:
             max_index_len = len(index)
     if len(errors) == 0:
-        display(Markdown(f"<h3 style='color:#4df894'>No Errors!</h3>"))
+        display(Markdown("<h3 style='color:#4df894'>No Errors!</h3>"))
     for index, err in errors.items():
         index = index + " "*(max_index_len-len(index))
         delim = " : "
