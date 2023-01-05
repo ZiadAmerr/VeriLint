@@ -59,6 +59,8 @@ def parse_as_blocks(lines):
     i_begin = 0
     i_end = 0
     for line in lines:
+        if len(line.split()) == 0:
+            continue
         if line.split()[0] == "always":
             in_always = True
 
