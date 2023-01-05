@@ -276,7 +276,7 @@ class Statement:
         max_size = 0
         temp_size = 0
         terms = re.split(r'( \+ | \<\< | \- | \>\> )', self.value)
-        for i, term in enumerate(terms):
+        for term in terms:
             term = term.strip()
             temp_size = get_var(term)
             if temp_size is None:
@@ -284,7 +284,7 @@ class Statement:
             temp_size = temp_size["size"]
             if temp_size > max_size:
                 max_size = temp_size
-
+        
         if max_size >= size_of_target:
             if " + " in terms or " << " in terms:
                 add_error(self, "Possibility of Overflow")
@@ -436,8 +436,11 @@ class Assign:
             if temp_size > max_size:
                 max_size = temp_size
 
-        if max_size >= size_of_target and (" + " in terms or " << " in terms):
-            add_error(self, "Possibility of Overflow")
+        if max_size >= size_of_target:
+            if " + " in terms or " << " in terms:
+                add_error(self, "Possibility of Overflow")
+            elif " - " in terms or " >> " in terms:
+                add_error(self, "Possibility of Underflow")
 
     def __str__(self):
         return f"assign {self.target} = {self.value}"
@@ -454,6 +457,7 @@ def extract_states(line, states):
     # state = [ready, =, 2'b00]
     state = line.split(' = ')[0].split()[-1]
     value = line.split()[-1][:-1]
+
     def evaluate_num(num):
         """Evaluates the number as an actual string to be evaluated"""
         if "'" not in num and num in ['0', '1']:
@@ -477,7 +481,7 @@ def extract_states(line, states):
 
             num = "".join(num.split("'"))
             return int(num.split(base_str)[1], base)
-    
+
     states[state] = {
         "reachable": False,
         "value": evaluate_num(value)
@@ -522,10 +526,10 @@ def check_unreachable_states(file, states):
         if "next_state" in line and " = " in line:
             case_name = line.split(":")[0]
             state = line.split(" = ")[-1][:-1]
-            
+
             if "'" in state:
                 state = evaluate_num(state)
-            
+
             for temp_state_name, its_dict in states.items():
                 if its_dict["value"] == state:
                     state = temp_state_name
@@ -784,11 +788,14 @@ def multi_driven_checker():
 
             if not should_check:
                 continue
-
+            error_msg = "Multi-Driven Bus/Reg"
             for statement in other_always_block.statements:
                 if statement.target in local_multi_driven.assigned:
                     name = f"{get_var(statement.target)['net_type']} {statement.target}"
-                    add_error(name, "Multi-Driven Bus/Reg")
+                    if name in errors.keys() and error_msg in errors[name]:
+                        continue
+                    add_error(name, error_msg)
+
 
 
 def full_case_checker():
@@ -869,10 +876,21 @@ def print_errors():
     for index in errors.keys():
         if len(index) >= max_index_len:
             max_index_len = len(index)
-    
+    if len(errors) == 0:
+        display(Markdown(f"<h3 style='color:#4df894'>No Errors!</h3>"))
     for index, err in errors.items():
         index = index + " "*(max_index_len-len(index))
         delim = " : "
-        display(Markdown(f"<code><i>{index}{delim}<b>{err}</b></code>"))
+        x = len(index) + len(delim) + 1
+        if ", " in err:
+            err = err.split(", ")
+            for i, elem in enumerate(err):
+                if not i:
+                    continue
+                err[i] = " "*x + elem
+            err = "\n".join(err)
+        display(Markdown(f"<code style='color:#f13137'><i>{index}{delim}</i><b>{err}</b></code>"))
+
+
 print("\n\n")
 print_errors()
