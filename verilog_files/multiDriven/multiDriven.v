@@ -1,21 +1,20 @@
-module multiDriven (output out);
-    wire x;
+module VeriLint (input [1:0] x, output out);
     reg y;
-    //here x has multiple drivers which are the 2 assign statements
-    assign x = 1'b1; 
-    assign x = 1'b0;
-    //same thing here with out
+    
+    // In the 2 following lines, out is multdriven by two assign statements
     assign out = x;
     assign out = 0'b1;
 
-    //regs are assigned values using an always block while wires are assigned values using assign statements
+    // In the 2 following always blocks, y is multidriven
     always @(*)
-    begin
-        y = 1'b1;
-    end
-
+        y = y + 1;
     always @(*)
-    begin
         y = 1'b0;
-    end
+
+    // The following casex statement is neither full nor parallel
+    always @(x)
+        casex (x)
+            2'b0X: y = 0;
+            2'bX1: y = 0; 
+        endcase
 endmodule

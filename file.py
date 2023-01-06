@@ -284,7 +284,7 @@ class Statement:
             temp_size = temp_size["size"]
             if temp_size > max_size:
                 max_size = temp_size
-        
+
         if max_size >= size_of_target:
             if " + " in terms or " << " in terms:
                 add_error(self, "Possibility of Overflow")
@@ -797,11 +797,10 @@ def multi_driven_checker():
                     add_error(name, error_msg)
 
 
-
 def full_case_checker():
     """Autocheck full case"""
     for my_block in file:
-        if "always @(" in my_block[1]:
+        if "case" in my_block[1]:
             freq = check_case(always_block_param=my_block[1])[0]
             full = is_full(freq)
             if not full:
@@ -811,7 +810,7 @@ def full_case_checker():
 def parallel_case_checker():
     """Autocheck parallel case"""
     for my_block in file:
-        if "always @(" in my_block[1]:
+        if "case" in my_block[1]:
             freq, cases = check_case(always_block_param=my_block[1])
             parallel = is_parallel(freq, cases)
             if not parallel:
@@ -867,6 +866,8 @@ elif "full" in filename:
     full_case_checker()
 elif "multidriven" in filename:
     multi_driven_checker()
+    parallel_case_checker()
+    full_case_checker()
 elif "state" in filename:
     fsm_checker()
 
@@ -877,7 +878,7 @@ def print_errors():
         if len(index) >= max_index_len:
             max_index_len = len(index)
     if len(errors) == 0:
-        display(Markdown("<h3 style='color:#4df894'>No Errors!</h3>"))
+        display(Markdown(f"<h3 style='color:#4df894'>No Errors!</h3>"))
     for index, err in errors.items():
         index = index + " "*(max_index_len-len(index))
         delim = " : "
@@ -889,7 +890,8 @@ def print_errors():
                     continue
                 err[i] = " "*x + elem
             err = "\n".join(err)
-        display(Markdown(f"<code style='color:#f13137'><i>{index}{delim}</i><b>{err}</b></code>"))
+        display(Markdown(
+            f"<code style='color:#f13137'><i>{index}{delim}</i><b>{err}</b></code>"))
 
 
 print("\n\n")

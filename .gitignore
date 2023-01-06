@@ -4,3 +4,11 @@
 /__pycache__
 /venv
 /verilog_files/.DS_Store
+VeriLint.ipynb
+VeriLint.zip
+LinkedIn/carbon.psd
+.gitignore
+LinkedIn/Txt
+LinkedIn/multidriven.psd
+verilog_files/multiDriven/multiDriven.v
+verilog_files/Project2_final/.DS_Store
