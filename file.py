@@ -3,6 +3,8 @@ import re
 import numpy as np
 from IPython.display import display, Markdown
 from reader import read, file_to_lines
+
+
 errors = {}
 db = {}
 ENABLE_INTERACTIVE_LOG = False
@@ -73,10 +75,12 @@ def add_error(obj, err):
         entry = obj
         if ENABLE_INTERACTIVE_LOG:
             print(f"ERROR: {err} in {entry}")
+
     else:
         entry = type(obj).__name__ + " " + obj.name
         if ENABLE_INTERACTIVE_LOG:
             print(f"ERROR: {err} in {obj.name}")
+    
     errors[entry] = errors.get(entry, "")
 
     if errors[entry] != "":
@@ -133,7 +137,7 @@ class Port:
         if self.direction not in ["input", "output", "inout"]:
             add_error(
                 self,
-                f"Invalid port direction, expected [input, output, input] but got {self.direction}")
+                f"Invalid port direction, expected [input, output, inout] but got {self.direction}")
         if not self.name.isidentifier():
             add_error(self, f"Invalid port name {self.name}")
         if self.size < 1:
@@ -205,6 +209,7 @@ class Statement:
         if self.value[-1] == ";":
             self.value = self.value[:-1]
         self.ready_val = self.compute()
+        
         # Assertions
         if not self.target.isidentifier():
             add_error(self, f"Invalid target name {self.target}")
@@ -585,7 +590,7 @@ def check_case(always_block_param):
                     case_type = "casez"
                 else:
                     add_error(always_block_param[1].split(
-                        ";")[0], "UNKNOWN CASE TYPE")
+                        ";")[0], f"UNKNOWN CASE TYPE {line}")
                     return None, None
             continue
         always.append(line.strip())
@@ -601,6 +606,7 @@ def check_case(always_block_param):
     for line in always_block_param:
         if "default" in line:
             has_default = True
+
 
     case_var = get_case_var(always)
     case_var_size = get_var(case_var)["size"]
@@ -691,8 +697,8 @@ def check_case(always_block_param):
     #             print(
     #                 f"{case} {num1}={num2}: {1 if compare_nums(num1, num2, case) else 0}")
     #         print()
+
     freq = np.zeros(4**case_var_size, dtype=int)
-    all_combs = generate_possible_combinations(case_var_size)
     for case in cases:
         for i, comb in enumerate(all_combs):
             freq[i] += int(compare_nums(case, comb))
@@ -701,6 +707,7 @@ def check_case(always_block_param):
         for i, _ in enumerate(freq):
             if freq[i] == 0:
                 freq[i] += 1
+    
     # If there is any number is frequency that is greater than 1, then it was repeated
     # return max(freq) <= 1
     return freq, cases
@@ -740,6 +747,8 @@ def multi_driven_checker():
     """Autocheck multidriven bus/reg"""
     global_multi_driven = MultiDrivenCheck()
     always_keys = []
+
+    # Loop thru all blocks
     for key, my_block in blocks.items():
         if "assign" in key:
             global_multi_driven += my_block
@@ -788,6 +797,7 @@ def multi_driven_checker():
 
             if not should_check:
                 continue
+
             error_msg = "Multi-Driven Bus/Reg"
             for statement in other_always_block.statements:
                 if statement.target in local_multi_driven.assigned:
@@ -856,20 +866,7 @@ def fsm_checker():
     my_file = file_to_lines(f"{full_path[0]}/verilog_files/fsm/{full_path[1]}")
     states = {}
     check_unreachable_states(my_file, states)
-
-
-# Let's do our job
-filename = PATH.lower()[:-2]
-if "parallel" in filename:
-    parallel_case_checker()
-elif "full" in filename:
-    full_case_checker()
-elif "multidriven" in filename:
-    multi_driven_checker()
-    parallel_case_checker()
-    full_case_checker()
-elif "state" in filename:
-    fsm_checker()
+    return
 
 
 def print_errors():
@@ -892,6 +889,22 @@ def print_errors():
             err = "\n".join(err)
         display(Markdown(
             f"<code style='color:#f13137'><i>{index}{delim}</i><b>{err}</b></code>"))
+    return
+
+
+# Let's do our job
+filename = PATH.lower()[:-2]
+
+if "parallel" in filename:
+    parallel_case_checker()
+elif "full" in filename:
+    parallel_case_checker()
+elif "multidriven" in filename:
+    multi_driven_checker()
+    parallel_case_checker()
+    full_case_checker()
+elif "state" in filename:
+    fsm_checker()
 
 
 print("\n\n")
