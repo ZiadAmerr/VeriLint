@@ -895,15 +895,16 @@ def print_errors():
 # Let's do our job
 filename = PATH.lower()[:-2]
 
-if "parallel" in filename:
+
+if   "parallel"    in filename:
     parallel_case_checker()
-elif "full" in filename:
-    parallel_case_checker()
+elif "full"        in filename:
+    full_case_checker()
 elif "multidriven" in filename:
     multi_driven_checker()
     parallel_case_checker()
     full_case_checker()
-elif "state" in filename:
+elif "state"       in filename:
     fsm_checker()
 
 
